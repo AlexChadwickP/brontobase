@@ -26,8 +26,6 @@ const userRepository = new UserRepository(db)
 // Initialise services
 const authService = new AuthService(userRepository);
 
-console.log(authService);
-
 // Initialise controllers
 const authController = new AuthController(authService);
 

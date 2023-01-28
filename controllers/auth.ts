@@ -2,7 +2,8 @@ import { z, OakContext } from "deps";
 import { AuthError, IAuthService } from "@services/auth.ts";
 
 interface IAuthController {
-
+    signUp: (ctx: OakContext) => void;
+    signIn: (ctx: OakContext) => void;
 }
 
 export class AuthController implements IAuthController {
@@ -17,8 +18,6 @@ export class AuthController implements IAuthController {
           });
       
           try {
-            console.log(this.authService);
-
             const body = bodySchema.parse(await request.body({ type: "json" }).value);
     
 
@@ -45,6 +44,7 @@ export class AuthController implements IAuthController {
             const jwt = await this.authService.signIn(body.email_address, body.password);
       
             response.status = 200;
+            response.body = { message: "Successfully signed in" }
             cookies.set('brontobase_jwt', jwt);
           } catch (err) {
             console.error(err);
