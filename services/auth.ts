@@ -10,19 +10,24 @@ export class AuthError extends Error {
     }
 }
 
-export default class AuthService {
+export interface IAuthService {
+    signUp(user: Omit<User, 'id'>): Promise<string>;
+    signIn(email_address: string, password: string): Promise<string>;
+}
+
+export default class AuthService implements IAuthService {
     constructor(
        private readonly userRepository: IUserRepository
     ) {}
 
-    async signup(user: Omit<User, 'id'>): Promise<string> {
+    async signUp(user: Omit<User, 'id'>): Promise<string> {
         const hashedPassword = await bcrypt.hash(user.password);
         this.userRepository.create({ email_address: user.email_address, password: hashedPassword });
 
-        return await this.login(user.email_address, user.password);
+        return await this.signIn(user.email_address, user.password);
     }
 
-    async login(email_address: string, password: string): Promise<string> {
+    async signIn(email_address: string, password: string): Promise<string> {
         const user = this.userRepository.findByEmailAddress(email_address);
     
         if (!await bcrypt.compare(password, user.password)) {

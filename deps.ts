@@ -13,3 +13,6 @@ export * as djwt from "https://deno.land/x/djwt@v2.8/mod.ts";
 
 // argon2
 export * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+
+// oak
+export { Application as OakApplication, Router as OakRouter, Context as OakContext } from "https://deno.land/x/oak@v11.1.0/mod.ts";
