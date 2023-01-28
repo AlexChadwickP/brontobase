@@ -3,7 +3,7 @@ import { DB } from "https://deno.land/x/sqlite@v3.7.0/mod.ts";
 import { z } from "./deps.ts"; 
 
 import UserRepository, { User } from "./data/users.ts";
-import AuthService from "@services/auth.ts";
+import AuthService, { AuthError } from "@services/auth.ts";
 
 
 const db = new DB("bronto.db");
@@ -55,13 +55,14 @@ router
     try {
       const body = bodySchema.parse(await ctx.request.body({ type: "json" }).value);
 
-      const login = await authService.login(body.email_address, body.password);
+      const jwt = await authService.login(body.email_address, body.password);
 
-      console.log(`JWT: ${login}`);
+      ctx.response.status = 200;
+      ctx.cookies.set('brontobase_jwt', jwt);
     } catch (err) {
       console.error(err);
       ctx.response.status = 400;
-      ctx.response.body = { message: "Couldn't log you in" };
+      ctx.response.body = err instanceof AuthError ? { message: err.message } : { message: "Couldn't log you in" };
     }
   });
 

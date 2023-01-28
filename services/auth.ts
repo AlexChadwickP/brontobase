@@ -1,5 +1,6 @@
 import { IUserRepository, User } from "@data/users.ts";
 import { djwt } from "deps";
+import { bcrypt } from "deps";
 
 export class AuthError extends Error {
     constructor(msg: string) {
@@ -14,20 +15,17 @@ export default class AuthService {
        private readonly userRepository: IUserRepository
     ) {}
 
-    signup(user: Omit<User, 'id'>): string {
-        this.userRepository.create(user);
+    async signup(user: Omit<User, 'id'>): Promise<string> {
+        const hashedPassword = await bcrypt.hash(user.password);
+        this.userRepository.create({ email_address: user.email_address, password: hashedPassword });
 
-        // TODO: Create JWT token and return it?
-
-        console.log('User created successfully');
-
-        return "";
+        return await this.login(user.email_address, user.password);
     }
 
     async login(email_address: string, password: string): Promise<string> {
         const user = this.userRepository.findByEmailAddress(email_address);
     
-        if (password !== user.password) {
+        if (!await bcrypt.compare(password, user.password)) {
             throw new AuthError("Passwords don't match"); 
         } 
 
@@ -38,7 +36,6 @@ export default class AuthService {
 
         const tokenKey = await crypto.subtle.generateKey({ name: "HMAC", hash: "SHA-512" }, true, ["sign", "verify"]);
 
-        // 3. If they're the same return a JWT token?
         const token = await djwt.create({ alg: "HS512", typ: "JWT" }, { ...sub }, tokenKey);
 
         return token;
