@@ -1,7 +1,7 @@
 {
-    "imports": {
-        "@data/": "./data/",
-        "@services/": "./services/",
-        "deps": "./deps.ts"
-    }
+  "imports": {
+    "@data/": "./data/",
+    "@services/": "./services/",
+    "deps": "./deps.ts"
+  }
 }

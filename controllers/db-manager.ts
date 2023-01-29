@@ -4,6 +4,7 @@ import { IDbManagerService } from "@services/db-manager.ts";
 export interface IDbManagerController {
     createTable: (ctx: OakContext) => void;
     insert: (ctx: OakContext) => void;
+    createRule: (ctx: OakContext) => void;
 }
 
 export default class DbManagerController implements IDbManagerController {
@@ -59,6 +60,28 @@ export default class DbManagerController implements IDbManagerController {
 
         response.status = 201;
         response.body = { message: "Inserted data successfully" };
+      } catch (err) {
+        console.error(err);
+        response.status = 400;
+        response.body = { message: "Something went wrong" };
+      }
+    }
+
+    async createRule({ request, response }: OakContext) {
+      const bodySchema = z.object({
+        name: z.string(),
+        tableName: z.string(),
+        rule: z.string(),
+        operation: z.union([z.literal("select"), z.literal("insert"), z.literal("delete"), z.literal("update")])
+      });
+
+      try {
+        const data = bodySchema.parse(await request.body({ type: "json" }).value);
+
+        this.dbManagerService.createRule(data.name, data.tableName, data.rule, data.operation);
+
+        response.status = 201;
+        response.body = { message: "New rule created" };
       } catch (err) {
         console.error(err);
         response.status = 400;

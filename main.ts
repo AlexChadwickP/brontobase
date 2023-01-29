@@ -1,12 +1,10 @@
-
 import { DB } from "https://deno.land/x/sqlite@v3.7.0/mod.ts";
-import { OakApplication, OakRouter } from "deps"; 
+import { OakApplication, OakRouter } from "deps";
 import UserRepository from "@data/users.ts";
 import AuthService from "@services/auth.ts";
 import DbManagerService from "@services/db-manager.ts";
 import { AuthController } from "./controllers/auth.ts";
 import DbManagerController from "./controllers/db-manager.ts";
-
 
 const db = new DB("bronto.db");
 const app = new OakApplication();
@@ -21,8 +19,18 @@ db.execute(`
   )
 `);
 
+db.execute(`
+           CREATE TABLE IF NOT EXISTS bronto_table_data (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            table_name TEXT NOT NULL,
+            rule TEXT NOT NULL,
+            operation TEXT NOT NULL
+           )
+`);
+
 // Initialise repositories
-const userRepository = new UserRepository(db)
+const userRepository = new UserRepository(db);
 
 // Initialise services
 const authService = new AuthService(userRepository);
@@ -38,11 +46,19 @@ router
   .post("/api/auth/signin", (ctx) => authController.signIn(ctx))
   // DB Manager
   .post("/db/create-table", (ctx) => dbManagerController.createTable(ctx))
-  .post("/db/insert", (ctx) => dbManagerController.insert(ctx));
+  .post("/db/insert", (ctx) => dbManagerController.insert(ctx))
+  .post("/db/rules", (ctx) => dbManagerController.createRule(ctx));
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-console.info(`${new Date().toLocaleTimeString()} - Listening on http://localhost:${8000}`);
+app.use((ctx) => {
+  ctx.response.status = 404;
+  ctx.response.body = { message: "Not Found" };
+});
+
+console.info(
+  `${new Date().toLocaleTimeString()} - Listening on http://localhost:${8000}`,
+);
 
 await app.listen({ port: 8000 });
