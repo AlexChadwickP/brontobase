@@ -1,8 +1,7 @@
 
 import { DB } from "https://deno.land/x/sqlite@v3.7.0/mod.ts";
-import { OakApplication, OakRouter } from "./deps.ts"; 
-
-import UserRepository from "./data/users.ts";
+import { OakApplication, OakRouter } from "deps"; 
+import UserRepository from "@data/users.ts";
 import AuthService from "@services/auth.ts";
 import DbManagerService from "@services/db-manager.ts";
 import { AuthController } from "./controllers/auth.ts";
@@ -38,7 +37,8 @@ router
   .post("/api/auth/signup", (ctx) => authController.signUp(ctx))
   .post("/api/auth/signin", (ctx) => authController.signIn(ctx))
   // DB Manager
-  .post("/db/create-table", (ctx) => dbManagerController.createTable(ctx));
+  .post("/db/create-table", (ctx) => dbManagerController.createTable(ctx))
+  .post("/db/insert", (ctx) => dbManagerController.insert(ctx));
 
 app.use(router.routes());
 app.use(router.allowedMethods());

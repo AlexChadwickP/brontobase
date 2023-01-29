@@ -3,6 +3,7 @@ import { IDbManagerService } from "@services/db-manager.ts";
 
 export interface IDbManagerController {
     createTable: (ctx: OakContext) => void;
+    insert: (ctx: OakContext) => void;
 }
 
 export default class DbManagerController implements IDbManagerController {
@@ -43,5 +44,25 @@ export default class DbManagerController implements IDbManagerController {
             response.status = 400;
             response.body = { message: "Something went wrong!" };
           }
+    }
+
+    async insert({ request, response }: OakContext) {
+      const bodySchema = z.object({
+        tableName: z.string(),
+        data: z.any()
+      });
+
+      try {
+        const data = bodySchema.parse(await request.body({ type: "json" }).value);
+
+        this.dbManagerService.insert(data.tableName, data.data);
+
+        response.status = 201;
+        response.body = { message: "Inserted data successfully" };
+      } catch (err) {
+        console.error(err);
+        response.status = 400;
+        response.body = { message: "Something went wrong" };
+      }
     }
 }

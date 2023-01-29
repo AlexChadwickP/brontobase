@@ -16,6 +16,7 @@ interface NewTableParams {
 
 export interface IDbManagerService {
     createTable: (newTableParams: NewTableParams) => void;
+    insert: (tableName: string, data: any) => void;
 }
 
 export class DbManagerError extends Error {
@@ -41,5 +42,34 @@ export default class DbManagerService implements IDbManagerService {
         console.log(tableQuery);
 
         this.db.query(tableQuery);
+    }
+
+    insert(tableName: string, data: any) {
+      let insertQuery = `INSERT INTO ${tableName}`;
+
+      let keysStr = "(";
+      let valuesStr = "VALUES (";
+
+     const dataArr = Object.entries(data);
+
+     for (const [i, column] of dataArr.entries()) {
+       const key = column[0];
+       const value = column[1];
+       keysStr += key;
+       valuesStr += typeof value === "string" ? `'${value}'` : value;
+ 
+       if (i !== dataArr.length - 1) {
+         // Not last element
+         keysStr += ",";
+         valuesStr += ",";
+       }
+     }
+
+      keysStr += ")";
+      valuesStr += ")";
+
+      insertQuery = `${insertQuery} ${keysStr} ${valuesStr};`;
+
+      this.db.query(insertQuery);
     }
 }
