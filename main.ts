@@ -1,11 +1,12 @@
 
 import { DB } from "https://deno.land/x/sqlite@v3.7.0/mod.ts";
-import { z, OakApplication, OakRouter } from "./deps.ts"; 
+import { OakApplication, OakRouter } from "./deps.ts"; 
 
-import UserRepository, { User } from "./data/users.ts";
-import AuthService, { AuthError } from "@services/auth.ts";
+import UserRepository from "./data/users.ts";
+import AuthService from "@services/auth.ts";
 import DbManagerService from "@services/db-manager.ts";
 import { AuthController } from "./controllers/auth.ts";
+import DbManagerController from "./controllers/db-manager.ts";
 
 
 const db = new DB("bronto.db");
@@ -30,44 +31,14 @@ const dbManagerService = new DbManagerService(db);
 
 // Initialise controllers
 const authController = new AuthController(authService);
+const dbManagerController = new DbManagerController(dbManagerService);
 
 router
+  // Auth
   .post("/signup", (ctx) => authController.signUp(ctx))
   .post("/signin", (ctx) => authController.signIn(ctx))
-  .post("/db/create-table", async (ctx) => {
-    const columnSchema = z.object({
-      name: z.string(),
-      dataType: z.union([
-        z.literal("null"),
-        z.literal("integer"),
-        z.literal("real"),
-        z.literal("text"),
-        z.literal("blob")
-      ]),
-      notNull: z.boolean().optional(),
-      unique: z.boolean().optional(),
-      autoIncrement: z.boolean().optional(),
-      default: z.any().optional()
-    });
-
-    const bodySchema = z.object({
-      name: z.string(),
-      columns: z.array(columnSchema).min(1)
-    });
-
-    try {
-      const data = bodySchema.parse(await ctx.request.body({ type: "json" }).value);
-
-      dbManagerService.createTable(data);
-
-      ctx.response.status = 201;
-      ctx.response.body = { message: "Created table successfully" };
-    } catch (err) {
-      console.error(err);
-      ctx.response.status = 400;
-      ctx.response.body = { message: "Something went wrong!" };
-    }
-  });
+  // DB Manager
+  .post("/db/create-table", (ctx) => dbManagerController.createTable(ctx));
 
 app.use(router.routes());
 app.use(router.allowedMethods());
