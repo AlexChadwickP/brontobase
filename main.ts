@@ -35,8 +35,8 @@ const dbManagerController = new DbManagerController(dbManagerService);
 
 router
   // Auth
-  .post("/signup", (ctx) => authController.signUp(ctx))
-  .post("/signin", (ctx) => authController.signIn(ctx))
+  .post("/api/auth/signup", (ctx) => authController.signUp(ctx))
+  .post("/api/auth/signin", (ctx) => authController.signIn(ctx))
   // DB Manager
   .post("/db/create-table", (ctx) => dbManagerController.createTable(ctx));
 
